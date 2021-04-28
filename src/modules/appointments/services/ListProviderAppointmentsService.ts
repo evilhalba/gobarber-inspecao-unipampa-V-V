@@ -31,16 +31,20 @@ class ListProviderAppointmentsService {
       cacheKey,
     );
 
-    if (
-      !appointments
-      ) {
-      appointments = await this.appointmentsRepository.findAllInDayFromProvider({provider_id,day,month,year,},
+    if (!appointments) {
+      appointments = await this.appointmentsRepository.findAllInDayFromProvider(
+        {
+          provider_id,
+          day,
+          month,
+          year,
+        },
       );
+    } else {
+      await this.cacheProvider.save(cacheKey, classToClass(appointments));
+
+      return appointments;
     }
-
-    await this.cacheProvider.save(cacheKey, classToClass(appointments));
-
-    return appointments;
   }
 }
 

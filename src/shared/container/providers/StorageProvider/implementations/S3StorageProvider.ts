@@ -11,7 +11,9 @@ class S3StorageProvider implements IStorageProvider {
   private client: S3;
 
   constructor() {
-    this.client = new aws.S3({region: 'us-east-1',});
+    this.client = new aws.S3({
+      region: 'us-east-1',
+    });
   }
 
   public async saveFile(file: string): Promise<string> {
@@ -19,26 +21,25 @@ class S3StorageProvider implements IStorageProvider {
 
     const ContentType = mime.getType(originalPath);
 
-    if (
-      !ContentType
-      ) {
-      throw Error('File not found');}
+    if (!ContentType) {
+      throw Error('File not found');
+    } else {
+      const fileContent = await fs.promises.readFile(originalPath);
 
-    const fileContent = await fs.promises.readFile(originalPath);
+      await this.client
+        .putObject({
+          Bucket: uploadConfig.config.aws.bucket,
+          Key: file,
+          ACL: 'public-read',
+          Body: fileContent,
+          ContentType,
+        })
+        .promise();
 
-    await this.client
-      .putObject({
-        Bucket: uploadConfig.config.aws.bucket,
-        Key: file,
-        ACL: 'public-read',
-        Body: fileContent,
-        ContentType,
-      })
-      .promise();
+      await fs.promises.unlink(originalPath);
 
-    await fs.promises.unlink(originalPath);
-
-    return file;
+      return file;
+    }
   }
 
   public async deleteFile(file: string): Promise<void> {
