@@ -27,12 +27,15 @@ class UsersRepository implements IUsersRepository {
     return findAppointment;
   }
 
-  public async findAllProviders({except_user_id,}: IFindAllProvidersDTO): Promise<User[]> {
+  public async findAllProviders({
+    except_user_id,
+  }: IFindAllProvidersDTO): Promise<User[]> {
     let users: User[];
 
     if (except_user_id) {
       users = await this.ormRepository.find({
-        where: {id: Not(except_user_id),},});
+        where: { id: Not(except_user_id) },
+      });
     } else {
       users = await this.ormRepository.find();
     }
